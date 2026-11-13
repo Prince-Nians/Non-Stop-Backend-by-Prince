@@ -1,58 +1,40 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Non Stop — Backend (Laravel API)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Public JSON API, database schema and seed content for the Non Stop website.
 
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+nonstop_webapp  (Next.js site)  ── GET /api/v1/... ──►  nonstop_backend  (this repo)
+nonstop_cms     (Filament admin) ── writes content ──►  PostgreSQL  ◄── reads ── nonstop_backend
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+This repo **owns the database**: migrations, models, seeders. The CMS app (`nonstop_cms`) connects to the same database and does not run migrations.
 
-## Contributing
+## Setup
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+cp .env.example .env          # set DB_* (PostgreSQL), APP_URL, FRONTEND_URL
+php artisan key:generate
+php artisan migrate
+php artisan db:seed           # loads the homepage content + converts images to WebP
+php artisan storage:link
+php artisan serve --port=8000
+php artisan test
+```
 
-## Code of Conduct
+`db:seed` reads Figma images from `SEED_ASSETS_PATH` (defaults to `../nonstop/public/figma`).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## API (`/api/v1`)
 
-## Security Vulnerabilities
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/home` | Everything the homepage needs in one call |
+| GET | `/settings`, `/products` | |
+| GET | `/events`, `/events/{slug}` | Paginated list, detail |
+| GET | `/blogs`, `/blogs/{slug}` | Paginated list, detail |
+| POST | `/contact`, `/partner` | Saved to `enquiries`, emailed to the notification address. Rate limited, honeypot field `website` |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Shared with the CMS
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Database:** both apps use the same PostgreSQL database. A schema change is a migration here, plus a matching model/resource update in `nonstop_cms` (and a refresh of its `tests/schema` copy).
+- **Images:** the CMS uploads to the `public` disk, this app serves them. In production both must point at the same S3/R2 bucket (locally the CMS sets `PUBLIC_DISK_ROOT` to this repo's `storage/app/public`).

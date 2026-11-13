@@ -22,6 +22,11 @@ class ContentSeeder extends Seeder
         }
 
         $lorem = 'consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium.';
+        $core = 'consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis';
+        // "\n" marks the line break the Figma design shows on desktop.
+        $productsText = $core."\npretium. ".$core.' pretium.';
+        $eventsText = $core."\npretium ".$core.' pretium';
+        $blogsText = $lorem.' at massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium.';
         $short = 'Lorem ipsum dolor sit amet consectetur. A eleifend turpis sed orci est amet. Urna nulla ut nunc in fusce a';
 
         SiteSetting::updateOrCreate(['id' => 1], [
@@ -58,7 +63,7 @@ class ContentSeeder extends Seeder
 
         $sections = [
             'hero' => ['title' => 'Stay Nonstop', 'image' => $this->img('hero-bg'), 'image_secondary' => $this->img('hero-title', false)],
-            'products' => ['title' => 'Our Products', 'description' => $lorem],
+            'products' => ['title' => 'Our Products', 'description' => $productsText],
             'partner' => [
                 'title' => 'BECOME A PARTNER', 'subtitle' => 'PARTNER PROGRAM',
                 'description' => 'Lorem ipsum dolor sit amet consectetur. A eleifend turpis sed orci est amet Urna nulla ut nunc in fusce a. Lacinia nulla sapien malesuada',
@@ -71,8 +76,8 @@ class ContentSeeder extends Seeder
                 'image' => $this->img('social-bg'),
                 'extra' => ['copy' => 'Lorem ipsum dolor sit amet consectetur. A eleifend turpis sed orci est amet. Urna nulla ut nunc in fusce a. Lacinia nulla sapien malesuada amet tortor cras ut sapien. Metus nibh facilisis sed pellentesque adipiscing venenatis faucibus nisi pellentesque adipiscing venenatis faucibus nisi'],
             ],
-            'events' => ['title' => 'Event & Webinars', 'description' => $lorem, 'button_label' => 'Read More', 'button_url' => '#events'],
-            'blogs' => ['title' => 'Blogs', 'description' => $lorem, 'image' => $this->img('blogs-bg')],
+            'events' => ['title' => 'Event & Webinars', 'description' => $eventsText, 'button_label' => 'Read More', 'button_url' => '#events'],
+            'blogs' => ['title' => 'Blogs', 'description' => $blogsText, 'image' => $this->img('blogs-bg')],
         ];
         foreach ($sections as $key => $data) {
             PageSection::updateOrCreate(['key' => $key], $data);
