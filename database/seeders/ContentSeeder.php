@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{AboutPoint, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -93,6 +93,20 @@ class ContentSeeder extends Seeder
                 'name' => $name, 'description' => $lorem, 'color' => $color, 'border_color' => $border,
                 'background_image' => $this->img("$f-bg"), 'can_image' => $this->img("$f-can"),
                 'button_url' => '#products', 'sort_order' => $i,
+            ]);
+        }
+
+        AboutSlide::query()->delete();
+        foreach ([
+            ['Classic', 'about-can', '#0062a0', '#21306a', '#053588', '#0062a0', '#21306a', '#008240'],
+            ['Jungle', 'about-can-jungle', '#71c603', '#027d2e', '#027d2e', '#71c603', '#027d2e', '#027d2e'],
+            ['Boost', 'about-can-boost', '#872062', '#321862', '#321862', '#872062', '#321862', '#008240'],
+            ['Zero Sugar', 'about-can-zero', '#77c6db', '#0091ae', '#053588', '#77c6db', '#008fad', '#008240'],
+        ] as $i => [$name, $can, $ra, $rb, $title, $num, $pt, $btn]) {
+            AboutSlide::create([
+                'name' => $name, 'can_image' => $this->img($can),
+                'ribbon_color_a' => $ra, 'ribbon_color_b' => $rb, 'title_color' => $title,
+                'number_color' => $num, 'point_title_color' => $pt, 'button_color' => $btn, 'sort_order' => $i,
             ]);
         }
 

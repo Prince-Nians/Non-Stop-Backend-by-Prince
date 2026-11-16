@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AboutPoint, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use App\Support\Presenter as P;
 
 class ContentController extends Controller
@@ -27,6 +27,7 @@ class ContentController extends Controller
             'shops' => Shop::where('is_active', true)->orderBy('sort_order')->get()->map(P::shop(...)),
             'sections' => PageSection::where('is_active', true)->get()->mapWithKeys(fn ($s) => [$s->key => P::section($s)]),
             'products' => Product::where('is_active', true)->orderBy('sort_order')->get()->map(P::product(...)),
+            'about_slides' => AboutSlide::where('is_active', true)->orderBy('sort_order')->get()->map(P::aboutSlide(...)),
             'about_points' => AboutPoint::where('is_active', true)->orderBy('sort_order')->get()->map(P::aboutPoint(...)),
             'social_photos' => SocialPhoto::where('is_active', true)->orderBy('sort_order')->get()->map(P::socialPhoto(...)),
             'events' => $this->published(Event::class)->orderBy('sort_order')->limit(3)->get()->map(fn ($e) => P::event($e)),
