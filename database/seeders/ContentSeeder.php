@@ -126,8 +126,24 @@ class ContentSeeder extends Seeder
         }
 
         SocialPhoto::query()->delete();
-        foreach ([1, 2, 3] as $i => $n) {
-            SocialPhoto::create(['image' => $this->img("social-photo-$n"), 'alt' => 'NON STOP community photo', 'sort_order' => $i]);
+        // Reels with an uploaded video come first: the first three become the autoplaying cards on the page.
+        // Every item opens in the popup (video if present, otherwise the Instagram embed).
+        foreach ([
+            ['https://www.instagram.com/reel/DeErd6szLeQ/', 'reel-1'],
+            ['https://www.instagram.com/reel/DftWkHOxShP/', 'reel-2'],
+            ['https://www.instagram.com/reel/Dfo-utkIKPn/', 'reel-3'],
+            ['https://www.instagram.com/reel/DfPfpM-NNF3/', 'reel-4'],
+            ['https://www.instagram.com/p/DfrwDMJsgFO/', null],
+            ['https://www.instagram.com/reel/DdWUksUFEAZ/', null],
+        ] as $i => [$instagram, $video]) {
+            SocialPhoto::create([
+                // Fallback cover only for the cards that have no video yet.
+                'image' => ($video || $i > 2) ? null : $this->img('social-photo-'.($i + 1)),
+                'video' => $video ? $this->video($video) : null,
+                'alt' => 'NON STOP on Instagram',
+                'instagram_url' => $instagram,
+                'sort_order' => $i,
+            ]);
         }
 
         foreach ([
@@ -144,7 +160,7 @@ class ContentSeeder extends Seeder
             'title' => 'Ingredient Breakdowns', 'excerpt' => $short, 'image' => $this->img('blog-main'),
             'is_featured' => true, 'published_at' => now(),
         ]);
-        foreach (['Flavor & Product Launches', 'Market Trends', 'Health & Safety', 'Regional Guides'] as $i => $title) {
+        foreach (['Flavor & Product Launches', 'Market Trends', 'Health & Safety', 'Regional Guides', 'Training & Performance', 'Hydration Guide', 'Recipes & Mixers', 'Community Stories'] as $i => $title) {
             BlogPost::updateOrCreate(['slug' => str($title)->slug()], [
                 'title' => $title,
                 'excerpt' => "Lorem ipsum dolor sit amet consectetur. A eleifend turpis sed orci\nest amet. Urna nulla ut nunc in fusce a.",
@@ -179,6 +195,22 @@ class ContentSeeder extends Seeder
             imagewebp($im, null, 85);
             $dest = "site/{$name}.webp";
             $disk->put($dest, ob_get_clean());
+            return $dest;
+        }
+        return null;
+    }
+
+    /** Reel videos live in storage/app/public/reels; if missing, copy from the seed assets' sibling "reels" folder. */
+    private function video(string $name): ?string
+    {
+        $disk = Storage::disk('public');
+        $dest = "reels/{$name}.mp4";
+        if ($disk->exists($dest)) {
+            return $dest;
+        }
+        $source = dirname($this->src)."/reels/{$name}.mp4";
+        if (is_file($source)) {
+            $disk->put($dest, file_get_contents($source));
             return $dest;
         }
         return null;

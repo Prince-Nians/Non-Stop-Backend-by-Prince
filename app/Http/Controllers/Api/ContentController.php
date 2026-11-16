@@ -32,7 +32,7 @@ class ContentController extends Controller
             'about_points' => AboutPoint::where('is_active', true)->orderBy('sort_order')->get()->map(P::aboutPoint(...)),
             'social_photos' => SocialPhoto::where('is_active', true)->orderBy('sort_order')->get()->map(P::socialPhoto(...)),
             'events' => $this->published(Event::class)->orderBy('sort_order')->limit(3)->get()->map(fn ($e) => P::event($e)),
-            'blogs' => $this->published(BlogPost::class)->orderByDesc('is_featured')->orderByDesc('published_at')->limit(5)->get()->map(fn ($b) => P::blog($b)),
+            'blogs' => $this->published(BlogPost::class)->orderByDesc('is_featured')->orderByDesc('published_at')->limit(13)->get()->map(fn ($b) => P::blog($b)),
         ]])->header('Cache-Control', 'public, max-age=60');
     }
 

@@ -24,6 +24,9 @@ class ApiTest extends TestCase
         $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'social_photos', 'events', 'blogs']]);
         $this->assertCount(4, $r->json('data.products'));
         $this->assertCount(3, $r->json('data.shops'));
+        $this->assertCount(6, $r->json('data.social_photos'));
+        $this->assertSame('https://www.instagram.com/reel/DeErd6szLeQ/', $r->json('data.social_photos.0.instagram_url'));
+        $this->assertNull($r->json('data.social_photos.3.image'));
         $this->assertCount(4, $r->json('data.about_slides'));
         $this->assertCount(4, $r->json('data.hero_slides'));
         $this->assertSame('stadium', $r->json('data.hero_slides.0.kind'));
@@ -39,7 +42,7 @@ class ApiTest extends TestCase
         $this->getJson('/api/v1/blogs/market-trends')->assertOk()->assertJsonPath('data.title', 'Market Trends');
         BlogPost::where('slug', 'market-trends')->update(['is_published' => false]);
         $this->getJson('/api/v1/blogs/market-trends')->assertNotFound();
-        $this->getJson('/api/v1/blogs')->assertOk()->assertJsonCount(4, 'data');
+        $this->getJson('/api/v1/blogs')->assertOk()->assertJsonCount(8, 'data');
     }
 
     public function test_contact_form_stores_and_validates(): void
@@ -56,5 +59,15 @@ class ApiTest extends TestCase
 
         $this->postJson('/api/v1/contact', ['name' => 'Bot', 'email' => 'b@example.com', 'message' => 'x', 'website' => 'spam'])->assertStatus(422);
         $this->assertSame(0, Enquiry::where('type', 'contact')->count());
+    }
+
+    public function test_instagram_links_are_cleaned_and_validated(): void
+    {
+        $clean = fn ($u) => \App\Support\Presenter::instagramPermalink($u);
+        $this->assertSame('https://www.instagram.com/reel/DeErd6szLeQ/', $clean('https://www.instagram.com/reel/DeErd6szLeQ/?utm_source=ig_web_button_share_sheet&dlrf=abc'));
+        $this->assertSame('https://www.instagram.com/p/DfrwDMJsgFO/', $clean('https://instagram.com/p/DfrwDMJsgFO?utm_source=x'));
+        $this->assertNull($clean('https://evil.example/reel/abc/'));
+        $this->assertNull($clean('javascript:alert(1)'));
+        $this->assertNull($clean(null));
     }
 }

@@ -89,7 +89,20 @@ class Presenter
 
     public static function socialPhoto(SocialPhoto $m): array
     {
-        return ['image' => self::url($m->image), 'alt' => $m->alt, 'url' => $m->url];
+        return [
+            'image' => self::url($m->image), 'alt' => $m->alt, 'url' => $m->url,
+            'instagram_url' => self::instagramPermalink($m->instagram_url),
+            'video' => self::url($m->video),
+        ];
+    }
+
+    /** Clean an Instagram reel/post link to https://www.instagram.com/{reel|p|tv}/{id}/ (null if it isn't one). */
+    public static function instagramPermalink(?string $url): ?string
+    {
+        if (! $url || ! preg_match('~^https?://(?:www\.)?instagram\.com/(reel|reels|p|tv)/([A-Za-z0-9_-]+)~i', trim($url), $m)) {
+            return null;
+        }
+        return 'https://www.instagram.com/'.($m[1] === 'reels' ? 'reel' : strtolower($m[1])).'/'.$m[2].'/';
     }
 
     public static function event(Event $m, bool $full = false): array
