@@ -12,18 +12,17 @@ use Tests\TestCase;
 class DatabaseStorageTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\SetsEnv;
 
     protected function setUp(): void
     {
-        putenv('PUBLIC_DISK_DRIVER=database');
-        $_ENV['PUBLIC_DISK_DRIVER'] = $_SERVER['PUBLIC_DISK_DRIVER'] = 'database';
+        $this->setEnv('PUBLIC_DISK_DRIVER', 'database');
         parent::setUp();
     }
 
     protected function tearDown(): void
     {
-        putenv('PUBLIC_DISK_DRIVER');
-        unset($_ENV['PUBLIC_DISK_DRIVER'], $_SERVER['PUBLIC_DISK_DRIVER']);
+        $this->restoreEnv();
         parent::tearDown();
     }
 
@@ -87,6 +86,9 @@ class DatabaseStorageTest extends TestCase
 
         $etag = $r->headers->get('ETag');
         $this->withHeader('If-None-Match', $etag)->get('/media/reels/clip.mp4')->assertStatus(304);
+
+        // Other sites (the CMS form preview) may read these public files.
+        $this->get('/media/reels/clip.mp4')->assertHeader('Access-Control-Allow-Origin', '*');
 
         $this->get('/media/reels/missing.mp4')->assertNotFound();
     }

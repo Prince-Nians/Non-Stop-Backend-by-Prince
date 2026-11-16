@@ -11,29 +11,16 @@ use Tests\TestCase;
 
 class DeploymentTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private array $touched = [];
-
-    private function env(string $key, ?string $value): void
-    {
-        $this->touched[] = $key;
-        if ($value === null) {
-            putenv($key);
-            unset($_ENV[$key], $_SERVER[$key]);
-        } else {
-            putenv("$key=$value");
-            $_ENV[$key] = $_SERVER[$key] = $value;
-        }
-    }
+    use \Tests\Concerns\SetsEnv;
 
     protected function tearDown(): void
     {
-        foreach ($this->touched as $key) {
-            $this->env($key, null);
-        }
+        $this->restoreEnv();
         parent::tearDown();
     }
+
+    use RefreshDatabase;
+
 
     public function test_public_disk_is_local_by_default(): void
     {
@@ -44,7 +31,7 @@ class DeploymentTest extends TestCase
     {
         foreach (['PUBLIC_DISK_DRIVER' => 's3', 'AWS_ACCESS_KEY_ID' => 'k', 'AWS_SECRET_ACCESS_KEY' => 's', 'AWS_BUCKET' => 'nonstop',
             'AWS_URL' => 'https://cdn.example.com', 'AWS_ENDPOINT' => 'https://acct.r2.cloudflarestorage.com', 'AWS_DEFAULT_REGION' => 'auto'] as $k => $v) {
-            $this->env($k, $v);
+            $this->setEnv($k, $v);
         }
         $this->refreshApplication();
 
@@ -71,14 +58,14 @@ class DeploymentTest extends TestCase
         $this->seed(DatabaseSeeder::class); // second run, e.g. a redeploy
         $this->assertSame('Edited by editor', SiteSetting::first()->site_name);
 
-        $this->env('FORCE_SEED', 'true');
+        $this->setEnv('FORCE_SEED', 'true');
         $this->seed(DatabaseSeeder::class);
         $this->assertSame('NON STOP', SiteSetting::first()->site_name);
     }
 
     public function test_seeding_uses_the_bundled_images_on_a_fresh_server(): void
     {
-        $this->env('SEED_ASSETS_PATH', '/nonexistent/path');
+        $this->setEnv('SEED_ASSETS_PATH', '/nonexistent/path');
         config(['filesystems.disks.public.root' => sys_get_temp_dir().'/ns-test-public2']);
         $this->seed(DatabaseSeeder::class);
 

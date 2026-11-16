@@ -22,6 +22,8 @@ class MediaController extends Controller
             'Cache-Control' => 'public, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
             'Cross-Origin-Resource-Policy' => 'cross-origin',
+            'Access-Control-Allow-Origin' => '*',   // public files; lets the CMS form read them for its preview
+            'Access-Control-Expose-Headers' => 'Content-Length, Content-Range, Accept-Ranges',
         ];
         if ($meta->mime === 'image/svg+xml') {
             $headers['Content-Security-Policy'] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
