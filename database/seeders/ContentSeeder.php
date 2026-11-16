@@ -247,11 +247,17 @@ class ContentSeeder extends Seeder
         return null;
     }
 
-    /** Reel videos live in storage/app/public/reels; if missing, copy from the seed assets' sibling "reels" folder. */
+    /** Reel videos: the bundled demo reels, else storage/app/public/reels, else the seed assets' sibling "reels" folder. */
     private function video(string $name): ?string
     {
         $disk = Storage::disk('public');
         $dest = "reels/{$name}.mp4";
+        // Preferred: the small demo reels bundled in database/seeders/assets/reels (works on any server).
+        $bundled = __DIR__."/assets/reels/{$name}.mp4";
+        if (is_file($bundled)) {
+            $disk->put($dest, file_get_contents($bundled));
+            return $dest;
+        }
         if ($disk->exists($dest)) {
             return $dest;
         }

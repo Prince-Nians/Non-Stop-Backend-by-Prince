@@ -40,9 +40,17 @@ return [
 
         // Where uploaded images/videos live. PUBLIC_DISK_DRIVER=local (default) uses a folder;
         // PUBLIC_DISK_DRIVER=s3 uses any S3-compatible bucket (AWS S3, Cloudflare R2, Backblaze B2, Spaces, MinIO).
-        // Both apps must point at the same bucket. No per-file ACLs are used: make the bucket (or its CDN / public URL) readable.
-        'public' => env('PUBLIC_DISK_DRIVER', 'local') === 's3'
-            ? [
+        // PUBLIC_DISK_DRIVER=database keeps files in the shared database (no bucket; ideal for demos).
+        // Both apps must point at the same bucket / database. No per-file ACLs are used: make the bucket (or its CDN / public URL) readable.
+        'public' => match (env('PUBLIC_DISK_DRIVER', 'local')) {
+            // Files live in the database table media_files and are served by this API at /media/... (demo setup).
+            'database' => [
+                'driver' => 'database',
+                'url' => env('PUBLIC_DISK_URL') ?: rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
+                'throw' => false,
+                'report' => false,
+            ],
+            's3' => [
                 'driver' => 's3',
                 'key' => env('AWS_ACCESS_KEY_ID'),
                 'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -53,8 +61,8 @@ return [
                 'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
                 'throw' => false,
                 'report' => false,
-            ]
-            : [
+            ],
+            default => [
                 'driver' => 'local',
                 'root' => storage_path('app/public'),
                 'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
@@ -62,6 +70,7 @@ return [
                 'throw' => false,
                 'report' => false,
             ],
+        },
 
         's3' => [
             'driver' => 's3',

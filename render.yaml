@@ -1,8 +1,13 @@
-# Render Blueprint: Postgres database + the API service.
-# New > Blueprint > pick this repo. Values marked `sync: false` are asked for in the dashboard.
+# Render Blueprint (FREE plan, demo setup): Postgres database + the API service.
+# New > Blueprint > pick this repo > Apply. No values are asked for: everything below is preset or generated.
+#
+# Demo setup: uploaded images/videos are kept IN the database (PUBLIC_DISK_DRIVER=database) and served by this API
+# at /media/..., so no bucket / cloud storage is needed. For real traffic switch to PUBLIC_DISK_DRIVER=s3 (see README).
+# Free-tier notes: the web service sleeps after ~15 min idle (first request takes 30-60 s) and the free Postgres
+# is deleted after 30 days.
 databases:
   - name: nonstop-db
-    plan: basic-256mb
+    plan: free
     databaseName: nonstop
     user: nonstop
 
@@ -10,7 +15,7 @@ services:
   - type: web
     name: nonstop-backend
     runtime: docker
-    plan: starter          # free instances sleep and are too slow for the website's 5 s timeout
+    plan: free
     healthCheckPath: /up
     envVars:
       - key: APP_NAME
@@ -19,18 +24,17 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
-      - key: APP_KEY
-        sync: false        # run locally: php artisan key:generate --show
-      - key: APP_URL
-        sync: false        # https://<this-service>.onrender.com
+      - key: APP_KEY_SEED          # the container derives a stable APP_KEY from this
+        generateValue: true
+      # APP_URL defaults to the service's own address (RENDER_EXTERNAL_URL) when not set
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_URL
         fromDatabase:
           name: nonstop-db
           property: connectionString
-      - key: FRONTEND_URL
-        sync: false        # https://<your-site>.vercel.app,https://www.<your-domain>.com
+      - key: FRONTEND_URL          # CORS: "*" is fine for a public read-only demo API; list your Vercel domain(s) later
+        value: "*"
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_LEVEL
@@ -44,36 +48,8 @@ services:
       - key: RUN_MIGRATIONS
         value: "true"
       - key: RUN_SEED
-        value: "true"      # safe: only loads the default content when the database is empty
-      # Shared file storage (any S3-compatible bucket: Cloudflare R2, AWS S3, Backblaze B2, ...)
+        value: "true"              # loads the demo content + images + reels only if the database is empty
       - key: PUBLIC_DISK_DRIVER
-        value: s3
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false
-      - key: AWS_BUCKET
-        sync: false
-      - key: AWS_DEFAULT_REGION
-        value: auto        # R2: auto. AWS S3: e.g. ap-south-1
-      - key: AWS_ENDPOINT
-        sync: false        # R2/other: https://<account>.r2.cloudflarestorage.com. Leave empty for AWS S3
-      - key: AWS_URL
-        sync: false        # public URL of the bucket / CDN, no trailing slash
-      - key: AWS_USE_PATH_STYLE_ENDPOINT
-        value: "false"
-      # Email for contact / partner enquiries (any SMTP). Enquiries are saved even if email is not set up.
-      - key: MAIL_MAILER
-        value: smtp
-      - key: MAIL_HOST
-        sync: false
-      - key: MAIL_PORT
-        value: "587"
-      - key: MAIL_USERNAME
-        sync: false
-      - key: MAIL_PASSWORD
-        sync: false
-      - key: MAIL_FROM_ADDRESS
-        sync: false
-      - key: MAIL_FROM_NAME
-        value: Non Stop
+        value: database
+      - key: MAIL_MAILER           # demo: enquiry emails are written to the log; set SMTP details for real email
+        value: log
