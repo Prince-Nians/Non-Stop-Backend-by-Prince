@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{AboutPoint, AboutSlide, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, HeroSlide, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -94,6 +94,16 @@ class ContentSeeder extends Seeder
                 'background_image' => $this->img("$f-bg"), 'can_image' => $this->img("$f-can"),
                 'button_url' => '#products', 'sort_order' => $i,
             ]);
+        }
+
+        HeroSlide::query()->delete();
+        foreach ([
+            ['stadium', 'Stadium', null, null],
+            ['banner', 'Jungle', 'hero-banner-jungle', 'STAY NONSTOP — NON STOP Jungle'],
+            ['banner', 'Boost', 'hero-banner-boost', 'STAY NONSTOP — NON STOP Boost'],
+            ['banner', 'Zero Sugar', 'hero-banner-zero', 'STAY NONSTOP — NON STOP Classic Zero Sugar'],
+        ] as $i => [$kind, $name, $file, $alt]) {
+            HeroSlide::create(['kind' => $kind, 'name' => $name, 'image' => $file ? $this->img($file) : null, 'alt' => $alt, 'sort_order' => $i + 1]);
         }
 
         AboutSlide::query()->delete();

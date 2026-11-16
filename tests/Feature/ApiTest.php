@@ -21,10 +21,13 @@ class ApiTest extends TestCase
     public function test_home_returns_all_sections(): void
     {
         $r = $this->getJson('/api/v1/home')->assertOk();
-        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'social_photos', 'events', 'blogs']]);
+        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'social_photos', 'events', 'blogs']]);
         $this->assertCount(4, $r->json('data.products'));
         $this->assertCount(3, $r->json('data.shops'));
         $this->assertCount(4, $r->json('data.about_slides'));
+        $this->assertCount(4, $r->json('data.hero_slides'));
+        $this->assertSame('stadium', $r->json('data.hero_slides.0.kind'));
+        $this->assertStringStartsWith('http', $r->json('data.hero_slides.1.image'));
         $this->assertSame('#71c603', $r->json('data.about_slides.1.colors.ribbon_a'));
         $this->assertCount(7, $r->json('data.nav.header'));
         $this->assertSame('Our Products', $r->json('data.sections.products.title'));
