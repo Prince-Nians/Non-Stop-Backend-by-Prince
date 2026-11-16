@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{AboutPoint, AboutSlide, HeroSlide, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, HeroSlide, SiteAsset, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -70,13 +70,29 @@ class ContentSeeder extends Seeder
                 'button_label' => 'Know More', 'button_url' => '#partner',
                 'image' => $this->img('products-bg'), 'extra' => ['buy_now_title' => 'BUY NOW'],
             ],
-            'about' => ['title' => 'About Us', 'description' => $lorem, 'button_label' => 'Become a Partner', 'button_url' => '#partner', 'image' => $this->img('about-can')],
+            'about' => ['title' => 'About Us', 'description' => $lorem, 'button_label' => 'Become a Partner', 'button_url' => '#partner', 'image' => $this->img('about-can'), 'extra' => ['ribbon_text' => 'NON STOP']],
             'social' => [
                 'title' => 'Social Media Handle', 'description' => $lorem, 'button_label' => 'Read More', 'button_url' => '#social',
                 'image' => $this->img('social-bg'),
                 'extra' => ['copy' => 'Lorem ipsum dolor sit amet consectetur. A eleifend turpis sed orci est amet. Urna nulla ut nunc in fusce a. Lacinia nulla sapien malesuada amet tortor cras ut sapien. Metus nibh facilisis sed pellentesque adipiscing venenatis faucibus nisi pellentesque adipiscing venenatis faucibus nisi'],
             ],
             'events' => ['title' => 'Event & Webinars', 'description' => $eventsText, 'button_label' => 'Read More', 'button_url' => '#events'],
+            'footer' => ['title' => 'Footer', 'extra' => ['quick_links_title' => 'Quick Links', 'contact_title' => 'Contact Us', 'follow_title' => 'Follow us']],
+            'labels' => [
+                'title' => 'Accessibility labels',
+                'description' => 'Text read aloud by screen readers and shown as tooltips. {name}, {n}, {count} and {alt} are filled in automatically.',
+                'extra' => [
+                    'site_home' => 'NON STOP home', 'main_menu' => 'Main', 'buy_online' => 'Buy online', 'buy_on' => 'Buy on {name}', 'buy_and_partner' => 'Buy now and partner program',
+                    'open_menu' => 'Open menu', 'close_menu' => 'Close menu', 'quick_links_nav' => 'Quick links',
+                    'previous_slide' => 'Previous slide', 'next_slide' => 'Next slide', 'choose_slide' => 'Choose slide', 'show_slide' => 'Show {name}',
+                    'slide_of' => '{n} of {count}: {name}', 'showing_slide' => 'Showing slide {n} of {count}: {name}',
+                    'flavours' => 'NON STOP flavours', 'previous_flavour' => 'Previous flavour', 'next_flavour' => 'Next flavour',
+                    'choose_flavour' => 'Choose flavour', 'show_flavour' => 'Show {name}', 'showing_flavour' => 'Showing {name}',
+                    'close' => 'Close', 'previous' => 'Previous', 'next' => 'Next', 'open_larger' => 'Open larger: {alt}',
+                    'view_on_instagram' => 'View on Instagram', 'view_original' => 'View original',
+                    'sound_on' => 'Turn sound on', 'sound_off' => 'Turn sound off',
+                ],
+            ],
             'blogs' => ['title' => 'Blogs', 'description' => $blogsText, 'image' => $this->img('blogs-bg')],
         ];
         foreach ($sections as $key => $data) {
@@ -94,6 +110,22 @@ class ContentSeeder extends Seeder
                 'background_image' => $this->img("$f-bg"), 'can_image' => $this->img("$f-can"),
                 'button_url' => '#products', 'sort_order' => $i,
             ]);
+        }
+
+        SiteAsset::query()->delete();
+        foreach ([
+            ['hero_can_classic', 'Hero can: Classic (left, back)', 'Stadium banner', 'hero-can-classic-fit', 'NON STOP Classic can'],
+            ['hero_can_jungle', 'Hero can: Jungle (left, front)', 'Stadium banner', 'hero-can-jungle', 'NON STOP Jungle can'],
+            ['hero_can_zero', 'Hero can: Zero Sugar (right, back)', 'Stadium banner', 'hero-can-zero-fit', 'NON STOP Classic Zero Sugar can'],
+            ['hero_can_boost', 'Hero can: Boost (right, front)', 'Stadium banner', 'hero-can-boost-fit', 'NON STOP Boost can'],
+            ['hero_ellipse_left', 'Hero shadow ellipse (left)', 'Stadium banner', 'hero-ellipse-l', null],
+            ['hero_ellipse_right', 'Hero shadow ellipse (right)', 'Stadium banner', 'hero-ellipse-r', null],
+            ['strip_hero', 'Checker strip under the banner', 'Banner bottom edge', 'checker-products', null],
+            ['strip_band', 'Checker strip above Buy Now', 'Top of Buy Now / Partner', 'checker-products', null],
+            ['strip_about', 'Checker strip under About Us', 'Bottom of About Us', 'checker-social', null],
+            ['strip_blogs', 'Checker strip under Blogs', 'Bottom of Blogs', 'checker-blogs', null],
+        ] as $i => [$key, $label, $usedIn, $file, $alt]) {
+            SiteAsset::create(['key' => $key, 'label' => $label, 'used_in' => $usedIn, 'image' => $this->img($file), 'alt' => $alt, 'sort_order' => $i]);
         }
 
         HeroSlide::query()->delete();

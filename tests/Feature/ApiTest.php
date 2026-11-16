@@ -25,6 +25,11 @@ class ApiTest extends TestCase
         $this->assertCount(4, $r->json('data.products'));
         $this->assertCount(3, $r->json('data.shops'));
         $this->assertCount(6, $r->json('data.social_photos'));
+        $this->assertCount(10, $r->json('data.assets'));
+        $this->assertStringStartsWith('http', $r->json('data.assets.hero_can_boost.image'));
+        $this->assertSame('NON STOP', $r->json('data.sections.about.extra.ribbon_text'));
+        $this->assertSame('Quick Links', $r->json('data.sections.footer.extra.quick_links_title'));
+        $this->assertSame('Close', $r->json('data.sections.labels.extra.close'));
         $this->assertSame('https://www.instagram.com/reel/DeErd6szLeQ/', $r->json('data.social_photos.0.instagram_url'));
         $this->assertNull($r->json('data.social_photos.3.image'));
         $this->assertCount(4, $r->json('data.about_slides'));
