@@ -85,4 +85,21 @@ class DeploymentTest extends TestCase
         $this->assertNotNull(\App\Models\Product::first()->can_image);
         $this->assertTrue(Storage::disk('public')->exists(\App\Models\Product::first()->can_image));
     }
+
+    public function test_an_interrupted_first_seed_is_resumed_not_skipped(): void
+    {
+        config(['filesystems.disks.public.root' => sys_get_temp_dir().'/ns-test-public3']);
+        $this->seed(DatabaseSeeder::class);
+        $this->assertNotNull(SiteSetting::first()->seeded_at); // finished -> marked
+
+        // Simulate a crash half way: content exists but the marker was never set and later tables are empty.
+        SiteSetting::query()->update(['seeded_at' => null]);
+        \App\Models\BlogPost::query()->delete();
+        \App\Models\Event::query()->delete();
+
+        $this->seed(DatabaseSeeder::class); // the next start finishes the job
+        $this->assertGreaterThan(0, \App\Models\BlogPost::count());
+        $this->assertGreaterThan(0, \App\Models\Event::count());
+        $this->assertNotNull(SiteSetting::first()->seeded_at);
+    }
 }

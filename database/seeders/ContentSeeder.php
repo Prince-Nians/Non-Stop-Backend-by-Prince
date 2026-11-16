@@ -16,8 +16,9 @@ class ContentSeeder extends Seeder
 
     public function run(): void
     {
-        // Safety: never overwrite content that editors may already have changed. Use FORCE_SEED=true to reload the defaults.
-        if (SiteSetting::exists() && ! filter_var(env('FORCE_SEED', false), FILTER_VALIDATE_BOOL)) {
+        // Safety: never overwrite content that editors may already have changed. The marker is set only when a seed has
+        // FINISHED, so an interrupted first run (e.g. a restart) is simply resumed. Use FORCE_SEED=true to reload the defaults.
+        if (SiteSetting::whereNotNull('seeded_at')->exists() && ! filter_var(env('FORCE_SEED', false), FILTER_VALIDATE_BOOL)) {
             $this->command?->warn('Content already exists - skipping. Set FORCE_SEED=true to overwrite it with the defaults.');
             return;
         }
@@ -205,6 +206,8 @@ class ContentSeeder extends Seeder
                 'thumbnail' => $this->img('blog-thumb'), 'published_at' => now()->subDays($i + 1),
             ]);
         }
+
+        SiteSetting::query()->update(['seeded_at' => now()]);
     }
 
     /** Import one Figma asset to the public disk (WebP for rasters). Returns the stored path or null. */

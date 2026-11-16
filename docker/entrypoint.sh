@@ -26,7 +26,10 @@ if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
 fi
 
 if [ "${RUN_SEED:-false}" = "true" ]; then
-  php artisan db:seed --force
+  # In the background: the first run copies ~20 MB of demo files into the database, which can take a couple of
+  # minutes. Apache starts straight away so Render sees the port open; the API fills up as the seed finishes.
+  # Re-running is safe: the seeder skips once it has finished, and resumes if it was interrupted.
+  (php artisan db:seed --force > /proc/1/fd/1 2>&1 || true) &
 fi
 
 chown -R www-data:www-data storage bootstrap/cache
