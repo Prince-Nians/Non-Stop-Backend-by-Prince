@@ -1,16 +1,10 @@
-# Render Blueprint (FREE plan, demo setup): Postgres database + the API service.
-# New > Blueprint > pick this repo > Apply. No values are asked for: everything below is preset or generated.
+# Render Blueprint (FREE plan, demo setup): the API service.
+# The database is an EXTERNAL free Postgres (Neon, see README), so Render only asks for ONE value: DB_URL.
+# New > Blueprint > pick this repo > paste DB_URL > Apply. Everything else is preset or generated.
 #
 # Demo setup: uploaded images/videos are kept IN the database (PUBLIC_DISK_DRIVER=database) and served by this API
 # at /media/..., so no bucket / cloud storage is needed. For real traffic switch to PUBLIC_DISK_DRIVER=s3 (see README).
-# Free-tier notes: the web service sleeps after ~15 min idle (first request takes 30-60 s) and the free Postgres
-# is deleted after 30 days.
-databases:
-  - name: nonstop-db
-    plan: free
-    databaseName: nonstop
-    user: nonstop
-
+# Free-tier note: the web service sleeps after ~15 min idle (first request takes 30-60 s).
 services:
   - type: web
     name: nonstop-backend
@@ -30,9 +24,9 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_URL
-        fromDatabase:
-          name: nonstop-db
-          property: connectionString
+        sync: false                # your Neon connection string (direct, not pooled), ending in ?sslmode=require
+      - key: DB_SSLMODE
+        value: require
       - key: FRONTEND_URL          # CORS: "*" is fine for a public read-only demo API; list your Vercel domain(s) later
         value: "*"
       - key: LOG_CHANNEL

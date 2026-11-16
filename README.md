@@ -41,15 +41,19 @@ php artisan test
 
 ## Deploy on Render (free demo)
 
-The repo's `render.yaml` sets everything up on Render's **free** plan, with **no cloud storage**:
-uploaded images and videos are kept in the database (`PUBLIC_DISK_DRIVER=database`) and served by this API at `/media/...`.
+Everything runs on free tiers with **no cloud storage**: images/videos are kept in the database (`PUBLIC_DISK_DRIVER=database`) and served by this API at `/media/...`.
 
-1. **Render → New → Blueprint** → pick this repo → **Apply**. It creates the Postgres database `nonstop-db` and the web service `nonstop-backend`. Nothing needs to be typed in: the app key is derived from a generated seed, `APP_URL` defaults to the service address, and mail goes to the log.
-2. On first start the container runs the migrations and loads the demo content (text, images, 4 reels) **only if the database is empty**, so a redeploy never overwrites edits. Set `FORCE_SEED=true` once to reload the defaults.
-3. Check it: `https://<service>.onrender.com/up`, `/api/v1/home` (image links should be `.../media/...`).
-4. Copy the database's **Internal Database URL** (nonstop-db → Connections) for the CMS.
+**1. A free Postgres database: Neon**
+- Sign up at neon.tech (no card). Create a project (name `nonstop`, pick the region closest to your Render region).
+- In **Connection details** untick *Pooled connection* and copy the string: `postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/neondb?sslmode=require`.
+- Use this same string as `DB_URL` for **both** the backend and the CMS.
 
-Free-tier notes: the service sleeps after ~15 idle minutes (the first request then takes 30–60 s, and images load slowly until it is awake); the free Postgres is deleted after 30 days. Everything is stored in that one database (~20 MB for the demo).
+**2. Render**: **New → Blueprint** → this repo. Paste the Neon string into `DB_URL` and **Apply**. Nothing else is asked: the app key is derived from a generated seed, `APP_URL` defaults to the service address, mail goes to the log.
+
+On first start the container creates the tables and loads the demo content (text, images, 4 reels) **only if the database is empty**, so a redeploy never overwrites edits (`FORCE_SEED=true` reloads the defaults).
+Check `https://<service>.onrender.com/up` and `/api/v1/home` (image links should be `.../media/...`).
+
+Free-tier notes: the service sleeps after ~15 idle minutes (first request 30–60 s; images load slowly until it is awake); Neon's free database also sleeps when idle and wakes in about a second. Everything uses roughly 20 MB of the free 0.5 GB.
 
 ### Going beyond a demo
 Database storage suits demos and small sites. For real traffic use any S3-compatible bucket (Cloudflare R2, AWS S3, Backblaze B2…) on **both** apps, with the same values:
