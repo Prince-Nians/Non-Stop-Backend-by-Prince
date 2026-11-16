@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class ContentSeeder extends Seeder
 {
-    private string $src;
+    protected string $src;
 
     public function run(): void
     {
@@ -211,7 +211,7 @@ class ContentSeeder extends Seeder
     }
 
     /** Import one Figma asset to the public disk (WebP for rasters). Returns the stored path or null. */
-    private function img(string $name, bool $convert = true): ?string
+    protected function img(string $name, bool $convert = true): ?string
     {
         // Preferred: the ready-made copies bundled in database/seeders/assets (works on any server).
         foreach (['webp', 'svg'] as $ext) {

@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\{AboutPoint, AboutSlide, HeroSlide, SiteAsset, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, Faq, HeroSlide, SiteAsset, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use Illuminate\Support\Facades\Storage;
 
 /** Turns CMS models into the public JSON shapes (absolute image URLs, no internal columns). */
@@ -24,6 +24,7 @@ class Presenter
             'logo' => self::url($s->logo),
             'phone' => $s->phone,
             'email' => $s->email,
+            'address' => $s->address,
             'copyright' => $s->copyright_text,
             'social' => [
                 'facebook' => $s->facebook_url, 'youtube' => $s->youtube_url,
@@ -66,6 +67,11 @@ class Presenter
     public static function aboutPoint(AboutPoint $m): array
     {
         return ['title' => $m->title, 'body' => $m->body];
+    }
+
+    public static function faq(Faq $m): array
+    {
+        return ['question' => $m->question, 'answer' => $m->answer];
     }
 
     public static function asset(SiteAsset $m): array

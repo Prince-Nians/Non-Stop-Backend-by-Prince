@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AboutPoint, AboutSlide, HeroSlide, SiteAsset, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
+use App\Models\{AboutPoint, AboutSlide, Faq, HeroSlide, SiteAsset, BlogPost, Event, NavLink, PageSection, Product, Shop, SiteSetting, SocialPhoto};
 use App\Support\Presenter as P;
 
 class ContentController extends Controller
@@ -27,6 +27,7 @@ class ContentController extends Controller
             'shops' => Shop::where('is_active', true)->orderBy('sort_order')->get()->map(P::shop(...)),
             'sections' => PageSection::where('is_active', true)->get()->mapWithKeys(fn ($s) => [$s->key => P::section($s)]),
             'products' => Product::where('is_active', true)->orderBy('sort_order')->get()->map(P::product(...)),
+            'faqs' => Faq::where('is_active', true)->orderBy('sort_order')->get()->map(P::faq(...)),
             'assets' => SiteAsset::whereNotNull('image')->get()->mapWithKeys(fn ($a) => [$a->key => P::asset($a)]),
             'hero_slides' => HeroSlide::where('is_active', true)->orderBy('sort_order')->get()->map(P::heroSlide(...)),
             'about_slides' => AboutSlide::where('is_active', true)->orderBy('sort_order')->get()->map(P::aboutSlide(...)),

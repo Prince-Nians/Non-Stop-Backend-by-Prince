@@ -89,4 +89,23 @@ class DeploymentTest extends TestCase
         $this->assertGreaterThan(0, \App\Models\Event::count());
         $this->assertNotNull(SiteSetting::first()->seeded_at);
     }
+
+    public function test_contact_page_content_is_added_to_an_already_seeded_database_without_touching_edits(): void
+    {
+        config(['filesystems.disks.public.root' => sys_get_temp_dir().'/ns-test-public4']);
+        $this->seed(DatabaseSeeder::class);
+
+        // An editor changed a contact text and removed one FAQ.
+        \App\Models\PageSection::where('key', 'contact_info')->update(['title' => 'Edited by editor']);
+        \App\Models\Faq::first()->delete();
+        // A database seeded before the contact page existed: its contact rows are missing.
+        \App\Models\PageSection::whereIn('key', ['contact_hero', 'marquee'])->delete();
+
+        $this->seed(DatabaseSeeder::class); // a redeploy (the main seeder skips; the additive one fills the gaps)
+
+        $this->assertSame('Edited by editor', \App\Models\PageSection::where('key', 'contact_info')->value('title'));
+        $this->assertNotNull(\App\Models\PageSection::where('key', 'contact_hero')->value('image'));
+        $this->assertSame(1, \App\Models\PageSection::where('key', 'marquee')->count());
+        $this->assertSame(4, \App\Models\Faq::count()); // FAQ items are not recreated once some exist
+    }
 }

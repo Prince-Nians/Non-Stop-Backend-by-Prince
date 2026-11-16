@@ -21,11 +21,16 @@ class ApiTest extends TestCase
     public function test_home_returns_all_sections(): void
     {
         $r = $this->getJson('/api/v1/home')->assertOk();
-        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'social_photos', 'events', 'blogs']]);
+        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'faqs', 'social_photos', 'events', 'blogs']]);
         $this->assertCount(4, $r->json('data.products'));
         $this->assertCount(3, $r->json('data.shops'));
         $this->assertCount(6, $r->json('data.social_photos'));
-        $this->assertCount(10, $r->json('data.assets'));
+        $this->assertCount(11, $r->json('data.assets')); // includes the FAQ background pattern
+        $this->assertCount(5, $r->json('data.faqs'));
+        $this->assertSame('CONTACT US', $r->json('data.sections.contact_hero.title'));
+        $this->assertStringStartsWith('http', $r->json('data.sections.contact_hero.image'));
+        $this->assertSame('Full Address', $r->json('data.settings.address'));
+        $this->assertSame('Submit Now', $r->json('data.sections.contact_form.button.label'));
         $this->assertStringStartsWith('http', $r->json('data.assets.hero_can_boost.image'));
         $this->assertSame('NON STOP', $r->json('data.sections.about.extra.ribbon_text'));
         $this->assertSame('Quick Links', $r->json('data.sections.footer.extra.quick_links_title'));

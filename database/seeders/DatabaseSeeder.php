@@ -10,5 +10,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(ContentSeeder::class);
+        $this->call(ContactPageSeeder::class); // additive: adds missing contact-page content, never overwrites
     }
 }
