@@ -1,0 +1,79 @@
+# Render Blueprint: Postgres database + the API service.
+# New > Blueprint > pick this repo. Values marked `sync: false` are asked for in the dashboard.
+databases:
+  - name: nonstop-db
+    plan: basic-256mb
+    databaseName: nonstop
+    user: nonstop
+
+services:
+  - type: web
+    name: nonstop-backend
+    runtime: docker
+    plan: starter          # free instances sleep and are too slow for the website's 5 s timeout
+    healthCheckPath: /up
+    envVars:
+      - key: APP_NAME
+        value: Non Stop
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false        # run locally: php artisan key:generate --show
+      - key: APP_URL
+        sync: false        # https://<this-service>.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: nonstop-db
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false        # https://<your-site>.vercel.app,https://www.<your-domain>.com
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: SESSION_DRIVER
+        value: array
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: RUN_SEED
+        value: "true"      # safe: only loads the default content when the database is empty
+      # Shared file storage (any S3-compatible bucket: Cloudflare R2, AWS S3, Backblaze B2, ...)
+      - key: PUBLIC_DISK_DRIVER
+        value: s3
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_BUCKET
+        sync: false
+      - key: AWS_DEFAULT_REGION
+        value: auto        # R2: auto. AWS S3: e.g. ap-south-1
+      - key: AWS_ENDPOINT
+        sync: false        # R2/other: https://<account>.r2.cloudflarestorage.com. Leave empty for AWS S3
+      - key: AWS_URL
+        sync: false        # public URL of the bucket / CDN, no trailing slash
+      - key: AWS_USE_PATH_STYLE_ENDPOINT
+        value: "false"
+      # Email for contact / partner enquiries (any SMTP). Enquiries are saved even if email is not set up.
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Non Stop

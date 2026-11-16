@@ -16,6 +16,12 @@ class ContentSeeder extends Seeder
 
     public function run(): void
     {
+        // Safety: never overwrite content that editors may already have changed. Use FORCE_SEED=true to reload the defaults.
+        if (SiteSetting::exists() && ! filter_var(env('FORCE_SEED', false), FILTER_VALIDATE_BOOL)) {
+            $this->command?->warn('Content already exists - skipping. Set FORCE_SEED=true to overwrite it with the defaults.');
+            return;
+        }
+
         $this->src = rtrim(env('SEED_ASSETS_PATH', base_path('../nonstop/public/figma')), '/');
         if (! is_dir($this->src)) {
             $this->command?->warn("Seed assets not found at {$this->src}; images will be empty.");
@@ -204,6 +210,15 @@ class ContentSeeder extends Seeder
     /** Import one Figma asset to the public disk (WebP for rasters). Returns the stored path or null. */
     private function img(string $name, bool $convert = true): ?string
     {
+        // Preferred: the ready-made copies bundled in database/seeders/assets (works on any server).
+        foreach (['webp', 'svg'] as $ext) {
+            $bundled = __DIR__."/assets/{$name}.{$ext}";
+            if (is_file($bundled)) {
+                $dest = "site/{$name}.{$ext}";
+                Storage::disk('public')->put($dest, file_get_contents($bundled));
+                return $dest;
+            }
+        }
         foreach (['png', 'svg'] as $ext) {
             $file = "{$this->src}/{$name}.{$ext}";
             if (! is_file($file)) {
