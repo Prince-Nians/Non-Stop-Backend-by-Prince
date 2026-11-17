@@ -69,6 +69,27 @@ class Presenter
         return ['title' => $m->title, 'body' => $m->body];
     }
 
+    public static function seo(\App\Models\PageSeo $m): array
+    {
+        return [
+            'title' => $m->meta_title,
+            'description' => $m->meta_description,
+            'keywords' => $m->keywords,
+            'og_title' => $m->og_title,
+            'og_description' => $m->og_description,
+            'og_image' => self::url($m->og_image),
+            'canonical_url' => $m->canonical_url,
+            'no_index' => (bool) $m->no_index,
+            // Extra tags the editor added: [{attr: name|property|http-equiv, name, content}]
+            'custom_meta' => collect($m->custom_meta ?? [])
+                ->filter(fn ($t) => filled($t['name'] ?? null) && filled($t['content'] ?? null) && in_array($t['attr'] ?? 'name', ['name', 'property', 'http-equiv'], true))
+                ->map(fn ($t) => ['attr' => $t['attr'] ?? 'name', 'name' => $t['name'], 'content' => $t['content']])
+                ->values()->all(),
+            // Only valid JSON is passed on, so a typo can never break the page.
+            'json_ld' => $m->json_ld && json_decode($m->json_ld) !== null ? $m->json_ld : null,
+        ];
+    }
+
     public static function faq(Faq $m): array
     {
         return ['question' => $m->question, 'answer' => $m->answer];

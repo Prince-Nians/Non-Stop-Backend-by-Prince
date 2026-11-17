@@ -21,12 +21,25 @@ class ApiTest extends TestCase
     public function test_home_returns_all_sections(): void
     {
         $r = $this->getJson('/api/v1/home')->assertOk();
-        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'faqs', 'social_photos', 'events', 'blogs']]);
+        $r->assertJsonStructure(['data' => ['settings', 'nav' => ['header', 'footer', 'legal'], 'shops', 'sections', 'products', 'about_points', 'about_slides', 'hero_slides', 'seo', 'faqs', 'social_photos', 'events', 'blogs']]);
         $this->assertCount(4, $r->json('data.products'));
         $this->assertCount(3, $r->json('data.shops'));
         $this->assertCount(6, $r->json('data.social_photos'));
         $this->assertCount(11, $r->json('data.assets')); // includes the FAQ background pattern
         $this->assertCount(5, $r->json('data.faqs'));
+        $this->assertSame('Contact Us — NON STOP', $r->json('data.seo.contact.title'));
+        $this->assertNotEmpty($r->json('data.seo.home.description'));
+        $this->assertFalse($r->json('data.seo.home.no_index'));
+        $this->assertSame([], $r->json('data.seo.home.custom_meta'));
+
+        // Editors' own tags: valid ones pass through, incomplete ones and broken JSON-LD are dropped.
+        \App\Models\PageSeo::where('page', 'home')->update([
+            'custom_meta' => [['attr' => 'name', 'name' => 'google-site-verification', 'content' => 'abc'], ['attr' => 'name', 'name' => '', 'content' => 'x']],
+            'json_ld' => '{ broken',
+        ]);
+        $r = $this->getJson('/api/v1/home');
+        $this->assertSame([['attr' => 'name', 'name' => 'google-site-verification', 'content' => 'abc']], $r->json('data.seo.home.custom_meta'));
+        $this->assertNull($r->json('data.seo.home.json_ld'));
         $this->assertSame('CONTACT US', $r->json('data.sections.contact_hero.title'));
         $this->assertStringStartsWith('http', $r->json('data.sections.contact_hero.image'));
         $this->assertSame('Full Address', $r->json('data.settings.address'));

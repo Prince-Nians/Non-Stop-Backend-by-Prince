@@ -11,5 +11,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(ContentSeeder::class);
         $this->call(ContactPageSeeder::class); // additive: adds missing contact-page content, never overwrites
+        $this->call(SeoSeeder::class); // additive: starter SEO tags per page, never overwrites
     }
 }
