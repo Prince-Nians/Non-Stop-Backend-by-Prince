@@ -40,8 +40,9 @@ class ContactPageSeeder extends ContentSeeder
             'marquee' => ['title' => 'Scrolling strip', 'extra' => ['phrases' => 'MAXIMUM EFFECT|NONSTOP ENERGY']],
         ];
         foreach ($sections as $key => $data) {
-            PageSection::firstOrCreate(['key' => $key], $data);
+            PageSection::firstOrCreate(['key' => $key], $data + ['page' => 'contact']);
         }
+        PageSection::whereIn('key', array_keys($sections))->update(['page' => 'contact']);
 
         if (! Faq::exists()) {
             $answer = 'A eleifend turpis sed orci est amet. Urna nulla ut nunc in fusce a. Lacinia nulla sapien malesuada amet tortor cras ut sapien. Metus nibh facilisis sed pellentesque adipiscing venenatis faucibus nisi.';
