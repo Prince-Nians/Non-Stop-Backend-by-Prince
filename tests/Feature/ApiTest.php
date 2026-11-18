@@ -27,6 +27,7 @@ class ApiTest extends TestCase
         $this->assertCount(6, $r->json('data.social_photos'));
         $this->assertCount(11, $r->json('data.assets')); // includes the FAQ background pattern
         $this->assertCount(5, $r->json('data.faqs'));
+        $this->assertSame('Learn More', $r->json('data.sections.products.button.label'));
         $this->assertSame('Contact Us — NON STOP', $r->json('data.seo.contact.title'));
         $this->assertNotEmpty($r->json('data.seo.home.description'));
         $this->assertFalse($r->json('data.seo.home.no_index'));
